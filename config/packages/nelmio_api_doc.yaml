@@ -1,0 +1,133 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: Product API
+            description: REST API for Product Management System
+            version: 1.0.0
+        paths:
+            /api/products:
+                get:
+                    summary: List products with pagination
+                    parameters:
+                        - name: page
+                          in: query
+                          schema:
+                              type: integer
+                              default: 1
+                        - name: limit
+                          in: query
+                          schema:
+                              type: integer
+                              default: 10
+                        - name: status
+                          in: query
+                          schema:
+                              type: string
+                              enum: [active, inactive]
+                    responses:
+                        '200':
+                            description: List of products
+                post:
+                    summary: Create new product
+                    requestBody:
+                        required: true
+                        content:
+                            application/json:
+                                schema:
+                                    type: object
+                                    properties:
+                                        name:
+                                            type: string
+                                        sku:
+                                            type: string
+                                        price:
+                                            type: string
+                                        currency:
+                                            type: string
+                                            enum: [PLN, EUR, USD]
+                                    required: [name, sku, price, currency]
+                    responses:
+                        '201':
+                            description: Product created
+            /api/products/{id}:
+                get:
+                    summary: Get product with price history
+                    parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema:
+                              type: string
+                              format: uuid
+                    responses:
+                        '200':
+                            description: Product details
+                        '404':
+                            description: Product not found
+                patch:
+                    summary: Update product
+                    parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema:
+                              type: string
+                              format: uuid
+                    requestBody:
+                        content:
+                            application/json:
+                                schema:
+                                    type: object
+                                    properties:
+                                        name:
+                                            type: string
+                                        sku:
+                                            type: string
+                                        price:
+                                            type: string
+                                        currency:
+                                            type: string
+                                        version:
+                                            type: integer
+                    responses:
+                        '200':
+                            description: Product updated
+                        '404':
+                            description: Product not found
+                        '409':
+                            description: Optimistic locking conflict
+                delete:
+                    summary: Soft delete product
+                    parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema:
+                              type: string
+                              format: uuid
+                    responses:
+                        '204':
+                            description: Product deleted
+                        '404':
+                            description: Product not found
+            /api/products/{id}/restore:
+                post:
+                    summary: Restore soft deleted product
+                    parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema:
+                              type: string
+                              format: uuid
+                    responses:
+                        '200':
+                            description: Product restored
+                        '404':
+                            description: Product not found
+                        '400':
+                            description: Product not deleted
+    areas:
+        default:
+            path_patterns:
+                - ^/api(?!/doc$)
