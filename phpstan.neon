@@ -1,0 +1,14 @@
+parameters:
+    level: 6
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - var
+        - vendor
+    ignoreErrors:
+        - '#Call to an undefined method [a-zA-Z0-9\_\\]+::expects\(\)#'
+        - '#with generic interface Doctrine\\Common\\Collections\\Collection does not specify its types#'
+        - '#return type with generic class Doctrine\\ORM\\Tools\\Pagination\\Paginator does not specify its types#'
+        - '#extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types#'
+        - '#has no value type specified in iterable type array#'
