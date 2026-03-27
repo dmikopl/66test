@@ -42,28 +42,16 @@ class ProductService
             throw new \RuntimeException('Product has been modified by another user');
         }
 
-        $this->validatePrice($newPrice);
-        $this->validateCurrency($currency);
-
-        $oldPrice = $product->getPrice();
-
-        if ($oldPrice === $newPrice) {
-            return;
-        }
-
-        $priceHistory = PriceHistory::create($product, $oldPrice, $newPrice, $currency);
-        $product->addPriceHistory($priceHistory);
-        $product->setPrice($newPrice);
-        $product->setCurrency($currency);
+        $history = $product->changePrice($newPrice, $currency);
 
         $this->productRepository->save($product, true);
 
         $event = new ProductPriceChanged(
             $product->getId(),
-            $oldPrice,
-            $newPrice,
-            $currency,
-            new \DateTime()
+            $history->getOldPrice(),
+            $history->getNewPrice(),
+            $history->getCurrency(),
+            $history->getChangedAt()
         );
         $this->eventDispatcher->dispatch($event);
     }

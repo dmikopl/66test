@@ -17,7 +17,6 @@ class ProductTest extends TestCase
         $this->assertNotNull($product->getCreatedAt());
         $this->assertNotNull($product->getUpdatedAt());
         $this->assertNull($product->getDeletedAt());
-        $this->assertEquals(1, $product->getVersion());
     }
 
     public function testProductStatus(): void

@@ -74,10 +74,10 @@ class ProductServiceTest extends TestCase
         $this->repository->expects($this->never())
             ->method('save');
 
-        $this->productService->changePrice($product, '10.00', 'PLN');
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Price not changed');
 
-        $this->assertEquals('10.00', $product->getPrice());
-        $this->assertEmpty($product->getPriceHistories());
+        $this->productService->changePrice($product, '10.00', 'PLN');
     }
 
     public function testOptimisticLocking(): void

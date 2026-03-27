@@ -49,7 +49,7 @@ class Product
     #[ORM\Version]
     private ?int $version = null;
 
-    #[ORM\OneToMany(mappedBy: 'product', targetEntity: PriceHistory::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: PriceHistory::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['changedAt' => 'DESC'])]
     private Collection $priceHistories;
 
@@ -60,17 +60,16 @@ class Product
     public function __construct()
     {
         $this->id = Uuid::v4()->toRfc4122();
-        $this->createdAt = new \DateTime();
-        $this->updatedAt = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
         $this->status = self::STATUS_ACTIVE;
-        $this->version = 1;
         $this->priceHistories = new ArrayCollection();
     }
 
     #[ORM\PreUpdate]
     public function onPreUpdate(): void
     {
-        $this->updatedAt = new \DateTime();
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?string
@@ -118,6 +117,11 @@ class Product
 
     public function setCurrency(string $currency): static
     {
+        if (!in_array($currency, self::ALLOWED_CURRENCIES, true)) {
+            throw new \InvalidArgumentException(
+                sprintf('Invalid currency. Allowed: %s', implode(', ', self::ALLOWED_CURRENCIES))
+            );
+        }
         $this->currency = $currency;
         return $this;
     }
@@ -161,7 +165,7 @@ class Product
 
     public function softDelete(): void
     {
-        $this->deletedAt = new \DateTime();
+        $this->deletedAt = new \DateTimeImmutable();
         $this->status = self::STATUS_INACTIVE;
     }
 
@@ -193,5 +197,31 @@ class Product
             $priceHistory->setProduct($this);
         }
         return $this;
+    }
+
+    public function changePrice(string $newPrice, string $newCurrency): PriceHistory
+    {
+        $oldPrice = $this->price;
+        $oldCurrency = $this->currency;
+
+        if ($oldPrice === $newPrice && $oldCurrency === $newCurrency) {
+            throw new \DomainException('Price not changed');
+        }
+
+        $this->validatePrice($newPrice);
+        $this->setCurrency($newCurrency);
+        $this->price = $newPrice;
+
+        $history = PriceHistory::create($this, $oldPrice, $newPrice, $newCurrency);
+        $this->addPriceHistory($history);
+
+        return $history;
+    }
+
+    private function validatePrice(string $price): void
+    {
+        if (bccomp($price, '0', 2) <= 0) {
+            throw new \InvalidArgumentException('Price must be greater than 0');
+        }
     }
 }
