@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit;
 
 use App\Entity\Product;
-use App\Service\ProductService;
 use App\Repository\ProductRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\ProductService;
 use PHPUnit\Framework\TestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -18,12 +19,10 @@ class ProductServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->repository = $this->createMock(ProductRepository::class);
-        $entityManager = $this->createMock(EntityManagerInterface::class);
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
 
         $this->productService = new ProductService(
             $this->repository,
-            $entityManager,
             $this->eventDispatcher
         );
     }
