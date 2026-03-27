@@ -22,6 +22,7 @@ class ProductService
     {
         $this->validatePrice($price);
         $this->validateCurrency($currency);
+        $this->validateSku($sku);
 
         $product = new Product();
         $product->setName($name);
@@ -69,6 +70,7 @@ class ProductService
         }
 
         if ($sku !== null) {
+            $this->validateSku($sku, $product->getId());
             $product->setSku($sku);
         }
 
@@ -100,6 +102,17 @@ class ProductService
             throw new \InvalidArgumentException(
                 sprintf('Invalid currency. Allowed: %s', implode(', ', Product::ALLOWED_CURRENCIES))
             );
+        }
+    }
+
+    private function validateSku(string $sku, ?string $excludeProductId = null): void
+    {
+        if (empty(trim($sku))) {
+            throw new \InvalidArgumentException('SKU cannot be empty');
+        }
+
+        if ($this->productRepository->isSkuTaken($sku, $excludeProductId)) {
+            throw new \InvalidArgumentException('SKU already exists for active product');
         }
     }
 }
