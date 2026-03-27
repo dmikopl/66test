@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Product;
@@ -73,8 +75,8 @@ class ProductController extends AbstractController
                 'page' => $page,
                 'limit' => $limit,
                 'total' => (int) $total,
-                'pages' => ceil($total / $limit)
-            ]
+                'pages' => ceil($total / $limit),
+            ],
         ]);
     }
 
@@ -119,7 +121,7 @@ class ProductController extends AbstractController
             if (str_contains($e->getMessage(), 'modified by another user')) {
                 return new JsonResponse([
                     'error' => 'Product has been modified by another user',
-                    'currentVersion' => $product->getVersion()
+                    'currentVersion' => $product->getVersion(),
                 ], Response::HTTP_CONFLICT);
             }
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
@@ -144,6 +146,24 @@ class ProductController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/restore', methods: ['POST'])]
+    public function restore(string $id): JsonResponse
+    {
+        $product = $this->productRepository->find($id);
+
+        if (!$product) {
+            return new JsonResponse(['error' => 'Product not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$product->isDeleted()) {
+            return new JsonResponse(['error' => 'Product is not deleted'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $this->productService->restore($product);
+
+        return new JsonResponse($this->serializeProduct($product));
+    }
+
     private function serializeProduct(Product $product, bool $includeHistory = false): array
     {
         $data = [
@@ -155,7 +175,7 @@ class ProductController extends AbstractController
             'status' => $product->getStatus(),
             'createdAt' => $product->getCreatedAt()->format('Y-m-d H:i:s'),
             'updatedAt' => $product->getUpdatedAt()->format('Y-m-d H:i:s'),
-            'version' => $product->getVersion()
+            'version' => $product->getVersion(),
         ];
 
         if ($includeHistory) {
@@ -164,7 +184,7 @@ class ProductController extends AbstractController
                     'oldPrice' => $history->getOldPrice(),
                     'newPrice' => $history->getNewPrice(),
                     'currency' => $history->getCurrency(),
-                    'changedAt' => $history->getChangedAt()->format('Y-m-d H:i:s')
+                    'changedAt' => $history->getChangedAt()->format('Y-m-d H:i:s'),
                 ];
             }, $product->getPriceHistories()->toArray());
         }

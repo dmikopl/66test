@@ -1,20 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 use App\Entity\PriceHistory;
 use App\Entity\Product;
 use App\Event\ProductPriceChanged;
 use App\Repository\ProductRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class ProductService
 {
     public function __construct(
         private readonly ProductRepository $productRepository,
-        private readonly EntityManagerInterface $entityManager,
-        private readonly EventDispatcherInterface $eventDispatcher
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly CurrencyRateService $currencyRateService,
     ) {
     }
 
