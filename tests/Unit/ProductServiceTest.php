@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Entity\Product;
 use App\Repository\ProductRepository;
+use App\Service\CurrencyRateService;
 use App\Service\ProductService;
 use PHPUnit\Framework\TestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -15,15 +16,18 @@ class ProductServiceTest extends TestCase
     private ProductService $productService;
     private ProductRepository $repository;
     private EventDispatcherInterface $eventDispatcher;
+    private CurrencyRateService $currencyRateService;
 
     protected function setUp(): void
     {
         $this->repository = $this->createMock(ProductRepository::class);
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->currencyRateService = $this->createMock(CurrencyRateService::class);
 
         $this->productService = new ProductService(
             $this->repository,
-            $this->eventDispatcher
+            $this->eventDispatcher,
+            $this->currencyRateService
         );
     }
 
