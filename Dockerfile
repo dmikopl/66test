@@ -6,6 +6,7 @@ RUN apk add --no-cache \
     libpng-dev \
     oniguruma-dev \
     libxml2-dev \
+    libzip-dev \
     zip \
     unzip \
     postgresql-dev
@@ -23,12 +24,13 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/symfony
 
-COPY composer.json composer.lock ./
+COPY composer.json ./
 
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 COPY . .
 
+RUN mkdir -p /var/www/symfony/var
 RUN chown -R www-data:www-data /var/www/symfony
 RUN chmod -R 755 /var/www/symfony/var
 
