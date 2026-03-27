@@ -1,0 +1,2 @@
+-- Initialize database for recruitment task
+-- This file will be executed when PostgreSQL container starts

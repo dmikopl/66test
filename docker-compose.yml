@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recruitment_php
+    volumes:
+      - .:/var/www/symfony
+      - ./var/log:/var/www/symfony/var/log
+    networks:
+      - recruitment_network
+    depends_on:
+      - postgres
+
+  nginx:
+    image: nginx:alpine
+    container_name: recruitment_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/symfony
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - recruitment_network
+    depends_on:
+      - php
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: recruitment_postgres
+    environment:
+      POSTGRES_DB: dev
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: TestTest12!3
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - recruitment_network
+
+volumes:
+  postgres_data:
+
+networks:
+  recruitment_network:
+    driver: bridge

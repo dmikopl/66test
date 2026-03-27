@@ -1,0 +1,6 @@
+# config/routes.yaml
+framework:
+    router:
+        utf8: true
+
+# Configure your routes here
