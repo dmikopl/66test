@@ -100,19 +100,29 @@ class ProductController extends AbstractController
         }
 
         $data = json_decode($request->getContent(), true);
+        $expectedVersion = $data['version'] ?? null;
 
         try {
             if (isset($data['name']) || isset($data['sku'])) {
                 $this->productService->update(
                     $product,
                     $data['name'] ?? null,
-                    $data['sku'] ?? null
+                    $data['sku'] ?? null,
+                    $expectedVersion
                 );
             }
 
             if (isset($data['price']) && isset($data['currency'])) {
-                $this->productService->changePrice($product, $data['price'], $data['currency']);
+                $this->productService->changePrice($product, $data['price'], $data['currency'], $expectedVersion);
             }
+        } catch (\RuntimeException $e) {
+            if (str_contains($e->getMessage(), 'modified by another user')) {
+                return new JsonResponse([
+                    'error' => 'Product has been modified by another user',
+                    'currentVersion' => $product->getVersion()
+                ], Response::HTTP_CONFLICT);
+            }
+            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\InvalidArgumentException $e) {
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }

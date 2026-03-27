@@ -35,8 +35,12 @@ class ProductService
         return $product;
     }
 
-    public function changePrice(Product $product, string $newPrice, string $currency): void
+    public function changePrice(Product $product, string $newPrice, string $currency, ?int $expectedVersion = null): void
     {
+        if ($expectedVersion !== null && $product->getVersion() !== $expectedVersion) {
+            throw new \RuntimeException('Product has been modified by another user');
+        }
+
         $this->validatePrice($newPrice);
         $this->validateCurrency($currency);
 
@@ -63,8 +67,12 @@ class ProductService
         $this->eventDispatcher->dispatch($event);
     }
 
-    public function update(Product $product, ?string $name = null, ?string $sku = null): void
+    public function update(Product $product, ?string $name = null, ?string $sku = null, ?int $expectedVersion = null): void
     {
+        if ($expectedVersion !== null && $product->getVersion() !== $expectedVersion) {
+            throw new \RuntimeException('Product has been modified by another user');
+        }
+
         if ($name !== null) {
             $product->setName($name);
         }
